@@ -1,82 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
+class MyHomePage extends StatefulWidget{
+  const HomePage({key? key}) : super(key: key);
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  late BannerAd _bannerAd;
-  bool _isAdLoaded = false;
+class _HomePageState extends State<HomePage> {
+  InterstitialAd? interstitialAd;
+  bool isLoaded = false;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
 
   @override
-  void initState() {
-    super.initState();
-    _initBannerAd();
-  }
+  void didChangeDependencies() {
+    //TODO implement didChangeDependencies
+    super.didChangeDependencies();
+    InterstitialAd.load(
+      adUnitId: "ca-app-pub-3940256099942544/1033173712",
+      request: AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          setState(() {
+            isLoaded = true;
+            this.interstitialAd = ad;
+          });
+          print("Ad Loaded");
+        },
+        onAdFailedToLoad: (error) {
 
-
-  _initBannerAd() {
-    _bannerAd = BannerAd(
-        size: AdSize.banner,
-        adUnitId: BannerAd.testAdUnitId,
-        listener: BannerAdListener(
-          onAdLoaded: (ad) {
-            setState(() {
-              _isAdLoaded = true;
-            });
-          },
-          onAdFailedToLoad: (ad,error) {},
-        ),
-        request: AdRequest(),
+          print("Interstitial Failed to load");
+        },
+      ),
     );
 
-    _bannerAd.load();
   }
 
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
+    title: Text("Google Ads"),
+    ),
+    body: Container(
+      child: Center(
+        child: ElevatedButton(
+          onPressed: () {
+
+            if (isLoaded) {
+              interstitialAd!.show();
+            }
+          },
+          child: Text("Show"),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+
       ),
-      bottomNavigationBar: _isAdLoaded
-          ? Container(
-        height: _bannerAd.size.height.toDouble(),
-        width: _bannerAd.size.width.toDouble(),
-        child: AdWidget(ad: _bannerAd),
-      )
-          : SizedBox(),
     );
   }
 }
